@@ -4,6 +4,7 @@ type Service interface {
 	GetCashflow() ([]CashflowTable, error)
 	CreateCashflow(input CashflowInput) (CashflowTable, error)
 	UpdateCashflow(input CashflowEditInput) (CashflowTable, error)
+	DeleteCashflow(input int) (error)
 }
 
 type service struct {
@@ -51,4 +52,12 @@ func (s *service) UpdateCashflow(input CashflowEditInput) (CashflowTable, error)
 	}
 	return updatecashflow, nil
 
+}
+
+func (s *service) DeleteCashflow(input int) error {
+	err := s.repository.DeleteCashflow(input)
+	if err != nil {
+		return err
+	}
+	return nil
 }

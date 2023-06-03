@@ -72,3 +72,26 @@ func(h *cashflowHandler) UpdateCashflow(c *gin.Context){
 	response := helper.APIResponse("Success to update materi", http.StatusOK, "success", cashflow.FormatCashflow(updatecashflow))
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *cashflowHandler) DeleteCashflow(c *gin.Context) {
+	var input cashflow.CashflowDeleteInput
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("Failed to delete cashflow", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	err = h.cashflowService.DeleteCashflow(input.ID)
+	if err != nil {
+		response := helper.APIResponse("Failed to delete cashflow", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.APIResponse("Success to delete cashflow", http.StatusOK, "success", nil)
+	c.JSON(http.StatusOK, response)
+}

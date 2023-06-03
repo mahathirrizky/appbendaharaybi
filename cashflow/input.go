@@ -12,3 +12,7 @@ type CashflowEditInput struct {
 	Keterangan string `json:"keterangan" binding:"required"`
 	Jenis      string `json:"jenis" binding:"required"`
 }
+
+type CashflowDeleteInput struct {
+	ID         int    `json:"id" binding:"required"`
+}

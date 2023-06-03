@@ -7,6 +7,7 @@ type Repository interface {
 	GetCashflow() ([]CashflowTable, error)
 	UpdateCashflow(cashflow CashflowTable) (CashflowTable, error)
 	FindCashflowbyID(cashflowID int)(CashflowTable, error)
+	DeleteCashflow(cashflowID int)(error)
 }
 
 type repository struct {
@@ -51,4 +52,13 @@ func (r *repository)FindCashflowbyID(cashflowID int)(CashflowTable, error){
 		return cashflow, err
 	}
 	return cashflow, nil
+}
+
+func (r *repository) DeleteCashflow(cashflowID int)(error) {
+	cashflow := CashflowTable{ID: cashflowID}
+	err := r.db.Delete(&cashflow).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }
