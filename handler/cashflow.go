@@ -50,3 +50,25 @@ func(h *cashflowHandler) CreateCashflow(c *gin.Context){
 	response := helper.APIResponse("subscribe created", http.StatusCreated, "success", cashflow.FormatCashflow(newCashflow))
 	c.JSON(http.StatusCreated, response)
 }
+
+func(h *cashflowHandler) UpdateCashflow(c *gin.Context){
+	var input cashflow.CashflowEditInput
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("Failed to edit cashflow", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	updatecashflow, err:= h.cashflowService.UpdateCashflow(input)
+	if err != nil {
+		response := helper.APIResponse("Failed to update materi", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	response := helper.APIResponse("Success to update materi", http.StatusOK, "success", cashflow.FormatCashflow(updatecashflow))
+	c.JSON(http.StatusOK, response)
+}
