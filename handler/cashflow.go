@@ -12,7 +12,7 @@ type cashflowHandler struct {
 	cashflowService cashflow.Service
 }
 
-func NewCashflowrHandler(cashflowService cashflow.Service) *cashflowHandler {
+func NewCashflowHandler(cashflowService cashflow.Service) *cashflowHandler {
 	return &cashflowHandler{cashflowService}
 }
 

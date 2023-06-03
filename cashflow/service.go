@@ -2,7 +2,7 @@ package cashflow
 
 type Service interface {
 	GetCashflow() ([]CashflowTable, error)
-	CreateCashflow(input CashflowInput) ([]CashflowTable, error)
+	// CreateCashflow(input CashflowInput) ([]CashflowTable, error)
 }
 
 type service struct {
