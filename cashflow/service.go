@@ -1,7 +1,7 @@
 package cashflow
 
 type Service interface {
-	GetCashflow(cashflowID int) ([]CashflowTable, error)
+	GetCashflow() ([]CashflowTable, error)
 	CreateCashflow(input CashflowInput) ([]CashflowTable, error)
 }
 
@@ -13,7 +13,7 @@ func NewService(repository Repository) *service {
 	return &service{repository}
 }
 
-func (s *service) GetCashflow(cashflowID int) ([]CashflowTable, error) {
+func (s *service) GetCashflow() ([]CashflowTable, error) {
 	cashflow, err := s.repository.GetCashflow()
 	if err != nil {
 		return cashflow, err

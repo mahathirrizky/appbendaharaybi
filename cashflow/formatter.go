@@ -7,11 +7,20 @@ type CashflowFormatter struct {
 	Jenis      string `json:"jenis"`
 }
 
-func FormatCashflow(cashflow CashflowTable, token string) CashflowFormatter {
+func FormatCashflow(cashflow CashflowTable) CashflowFormatter {
 	return CashflowFormatter{
 		ID:    cashflow.ID,
 		Jumlah:cashflow.Jumlah,
 		Keterangan: cashflow.Keterangan,
 		Jenis: cashflow.Jenis,
 	}
+}
+
+func FormatCashflows(cashflows []CashflowTable) []CashflowFormatter{
+	cashflowsFormatter := []CashflowFormatter{}
+	for _, cashflow := range cashflows{
+		cashflowFormatter:= FormatCashflow(cashflow)
+		cashflowsFormatter = append(cashflowsFormatter, cashflowFormatter)
+	}
+	return cashflowsFormatter
 }
