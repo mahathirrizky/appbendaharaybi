@@ -53,7 +53,7 @@ func main() {
 
 
 	api.GET("/cashflows", authMiddleware(authService,userService), cashflowHandler.GetCashflow)
-	
+	api.POST("/createcashflow", authMiddleware(authService,userService), cashflowHandler.CreateCashflow)	
 
 	router.Run(":8080")
 }
