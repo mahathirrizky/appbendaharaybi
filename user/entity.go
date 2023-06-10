@@ -8,6 +8,7 @@ type UserTable struct {
 	Email          string
 	PasswordHash   string
 	Role           string
+	
 	Token          string
 	CreatedAt      time.Time
 	UpdatedAt      time.Time

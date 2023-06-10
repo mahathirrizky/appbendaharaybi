@@ -29,7 +29,7 @@ func (r *repository) Save(cashflow CashflowTable) (CashflowTable, error) {
 func (r *repository) GetCashflow() ([]CashflowTable, error){
 	var cashflow []CashflowTable
 
-	err := r.db.Find(&cashflow).Error
+	err := r.db.Order("created_at DESC").Find(&cashflow).Error
 	if err != nil{
 		return cashflow, err
 	}

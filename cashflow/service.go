@@ -1,10 +1,11 @@
 package cashflow
 
+
 type Service interface {
 	GetCashflow() ([]CashflowTable, error)
-	CreateCashflow(input CashflowInput) (CashflowTable, error)
+	CreateCashflow(input CashflowInput, file string) (CashflowTable, error)
 	UpdateCashflow(input CashflowEditInput) (CashflowTable, error)
-	DeleteCashflow(input int) (error)
+	DeleteCashflow(input int) error
 }
 
 type service struct {
@@ -23,11 +24,13 @@ func (s *service) GetCashflow() ([]CashflowTable, error) {
 	return cashflow, nil
 }
 
-func (s *service) CreateCashflow(input CashflowInput) (CashflowTable, error) {
+func (s *service) CreateCashflow(input CashflowInput, file string) (CashflowTable, error) {
+		
 	cashflow := CashflowTable{
 		Jumlah:     input.Jumlah,
 		Keterangan: input.Keterangan,
 		Jenis:      input.Jenis,
+		ImageUrl: file,
 	}
 
 	newCashfllow, err := s.repository.Save(cashflow)

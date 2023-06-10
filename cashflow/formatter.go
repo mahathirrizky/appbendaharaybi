@@ -7,6 +7,7 @@ type CashflowFormatter struct {
 	Jumlah     int       `json:"jumlah"`
 	Keterangan string    `json:"keterangan"`
 	Jenis      string    `json:"jenis"`
+	ImageURL   string `json:"image_url"`
 	CreatedAt  time.Time `json:"createdAt"`
 }
 
@@ -16,6 +17,7 @@ func FormatCashflow(cashflow CashflowTable) CashflowFormatter {
 		Jumlah:     cashflow.Jumlah,
 		Keterangan: cashflow.Keterangan,
 		Jenis:      cashflow.Jenis,
+		ImageURL: cashflow.ImageUrl,
 		CreatedAt: cashflow.CreatedAt,
 	}
 }

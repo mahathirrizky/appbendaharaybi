@@ -1,7 +1,11 @@
 package handler
 
 import (
+	"encoding/json"
+	"time"
+
 	"net/http"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 	"ybi.com/appbendaharaybi/cashflow"
@@ -29,9 +33,20 @@ func (h *cashflowHandler) GetCashflow(c *gin.Context) {
 }
 
 func(h *cashflowHandler) CreateCashflow(c *gin.Context){
+	var isUploaded bool
+var path string
+	
+	err := c.Request.ParseMultipartForm(32 << 20) 
+	if err != nil {
+		response := helper.APIResponse("Failed to create cashflow", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	
+	jsonData := c.Request.PostFormValue("data")
 	var input cashflow.CashflowInput
 
-	err := c.ShouldBindJSON(&input)
+	err = json.Unmarshal([]byte(jsonData), &input)
 	if err != nil {
 		errors:= helper.FormatValidationError(err)
 		errorMessage:= gin.H{"errors": errors}
@@ -40,15 +55,43 @@ func(h *cashflowHandler) CreateCashflow(c *gin.Context){
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
+	file, err := c.FormFile("image")
+if err != nil {
+    // No image uploaded
+    isUploaded = false
+} else {
+	// Image uploaded
+	isUploaded = true
 
-	newCashflow, err :=  h.cashflowService.CreateCashflow(input)
+	// Generate the safe file name by escaping special characters
+	escapedFileName := url.PathEscape(file.Filename)
+	currentDate := time.Now().Format("2006-01-02")
+	path = "images/" + currentDate + escapedFileName
+	err = c.SaveUploadedFile(file, path)
 	if err != nil {
-		response := helper.APIResponse("Failed to create cashflow", http.StatusBadRequest, "error", nil)
-		c.JSON(http.StatusBadRequest, response)
-		return
+			response := helper.APIResponse("Failed to save image", http.StatusInternalServerError, "error", nil)
+			c.JSON(http.StatusInternalServerError, response)
+			return
 	}
-	response := helper.APIResponse("subscribe created", http.StatusCreated, "success", cashflow.FormatCashflow(newCashflow))
-	c.JSON(http.StatusCreated, response)
+}
+
+newCashflow, err := h.cashflowService.CreateCashflow(input, path)
+if err != nil {
+    response := helper.APIResponse("Failed to create cashflow", http.StatusBadRequest, "error", nil)
+    c.JSON(http.StatusBadRequest, response)
+    return
+}
+
+data := gin.H{
+	"is_uploaded": isUploaded,
+	"cashflow":    cashflow.FormatCashflow(newCashflow),
+}
+statusCode := http.StatusOK
+if isUploaded {
+	statusCode = http.StatusCreated
+}
+response := helper.APIResponse("Cashflow created", statusCode, "success", data)
+c.JSON(statusCode, response)
 }
 
 func(h *cashflowHandler) UpdateCashflow(c *gin.Context){
