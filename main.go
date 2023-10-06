@@ -57,8 +57,12 @@ func main() {
 	api.PUT("/cashflow", authMiddleware(authService,userService), cashflowHandler.UpdateCashflow)
 	api.DELETE("/cashflow", authMiddleware(authService,userService), cashflowHandler.DeleteCashflow)
 
+	router.Static("/images","./images")
+
 	router.Run(":8080")
 }
+
+
 
 func authMiddleware(authService auth.Service, userService user.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {

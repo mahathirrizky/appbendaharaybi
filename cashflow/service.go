@@ -3,8 +3,8 @@ package cashflow
 
 type Service interface {
 	GetCashflow() ([]CashflowTable, error)
-	CreateCashflow(input CashflowInput, file string) (CashflowTable, error)
-	UpdateCashflow(input CashflowEditInput) (CashflowTable, error)
+	CreateCashflow(input CashflowInput, path string) (CashflowTable, error)
+	UpdateCashflow(input CashflowEditInput, path string) (CashflowTable, error)
 	DeleteCashflow(input int) error
 }
 
@@ -24,13 +24,13 @@ func (s *service) GetCashflow() ([]CashflowTable, error) {
 	return cashflow, nil
 }
 
-func (s *service) CreateCashflow(input CashflowInput, file string) (CashflowTable, error) {
+func (s *service) CreateCashflow(input CashflowInput, path string) (CashflowTable, error) {
 		
 	cashflow := CashflowTable{
 		Jumlah:     input.Jumlah,
 		Keterangan: input.Keterangan,
 		Jenis:      input.Jenis,
-		ImageUrl: file,
+		ImageUrl: path,
 	}
 
 	newCashfllow, err := s.repository.Save(cashflow)
@@ -40,14 +40,14 @@ func (s *service) CreateCashflow(input CashflowInput, file string) (CashflowTabl
 	return newCashfllow, nil
 }
 
-func (s *service) UpdateCashflow(input CashflowEditInput) (CashflowTable, error) {
+func (s *service) UpdateCashflow(input CashflowEditInput, path string) (CashflowTable, error) {
 	cashflow, err := s.repository.FindCashflowbyID(input.ID)
 	if err != nil {
 		return cashflow, err
 	}
-	cashflow.Jenis = input.Jenis
 	cashflow.Jumlah = input.Jumlah
 	cashflow.Keterangan = input.Keterangan
+	cashflow.ImageUrl = path
 
 	updatecashflow, err := s.repository.UpdateCashflow(cashflow)
 	if err != nil {

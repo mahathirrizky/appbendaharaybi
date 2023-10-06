@@ -2,10 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"net/http"
-	"net/url"
 
 	"github.com/gin-gonic/gin"
 	"ybi.com/appbendaharaybi/cashflow"
@@ -64,7 +66,7 @@ if err != nil {
 	isUploaded = true
 
 	// Generate the safe file name by escaping special characters
-	escapedFileName := url.PathEscape(file.Filename)
+	escapedFileName := strings.ReplaceAll(file.Filename, " ", "_")
 	currentDate := time.Now().Format("2006-01-02")
 	path = "images/" + currentDate + escapedFileName
 	err = c.SaveUploadedFile(file, path)
@@ -95,26 +97,75 @@ c.JSON(statusCode, response)
 }
 
 func(h *cashflowHandler) UpdateCashflow(c *gin.Context){
-	var input cashflow.CashflowEditInput
-	err := c.ShouldBindJSON(&input)
+	var isUploaded bool
+	var path string
+	
+	err := c.Request.ParseMultipartForm(32 << 20) 
 	if err != nil {
-		errors := helper.FormatValidationError(err)
-		errorMessage := gin.H{"errors": errors}
+		response := helper.APIResponse("Failed to edit cashflow", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	jsonData := c.Request.PostFormValue("data")
+	var input cashflow.CashflowEditInput
+
+	err = json.Unmarshal([]byte(jsonData), &input)
+	if err != nil {
+		errors:= helper.FormatValidationError(err)
+		errorMessage:= gin.H{"errors": errors}
 
 		response := helper.APIResponse("Failed to edit cashflow", http.StatusUnprocessableEntity, "error", errorMessage)
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
 
-	updatecashflow, err:= h.cashflowService.UpdateCashflow(input)
+	file, err := c.FormFile("newImage")
 	if err != nil {
-		response := helper.APIResponse("Failed to update materi", http.StatusBadRequest, "error", nil)
-		c.JSON(http.StatusBadRequest, response)
-		return
+			// No image uploaded
+			isUploaded = false
+	} else {
+		// Image uploaded
+		isUploaded = true
+	
+		// Generate the safe file name by escaping special characters
+		escapedFileName := strings.ReplaceAll(file.Filename, " ", "_")
+		currentDate := time.Now().Format("2006-01-02")
+		path = "images/" + currentDate + escapedFileName
+		err = c.SaveUploadedFile(file, path)
+		if err != nil {
+				response := helper.APIResponse("Failed to edit image", http.StatusInternalServerError, "error", nil)
+				c.JSON(http.StatusInternalServerError, response)
+				return
+		}
 	}
-	response := helper.APIResponse("Success to update materi", http.StatusOK, "success", cashflow.FormatCashflow(updatecashflow))
-	c.JSON(http.StatusOK, response)
+	updateCashflow, err := h.cashflowService.UpdateCashflow(input, path)
+if err != nil {
+    response := helper.APIResponse("Failed to edit cashflow", http.StatusBadRequest, "error", nil)
+    c.JSON(http.StatusBadRequest, response)
+    return
 }
+if input.ImageUrl != "" {
+	err := os.Remove(input.ImageUrl)
+	if err != nil {
+		// Handle the error if necessary
+		fmt.Printf("Failed to delete old image: %v\n", err)
+	}
+}
+
+data := gin.H{
+	"is_uploaded": isUploaded,
+	"cashflow":    cashflow.FormatCashflow(updateCashflow),
+}
+statusCode := http.StatusOK
+if isUploaded {
+	statusCode = http.StatusCreated
+}
+response := helper.APIResponse("Cashflow updateded", statusCode, "success", data)
+c.JSON(statusCode, response)
+}
+
+
+
 
 func (h *cashflowHandler) DeleteCashflow(c *gin.Context) {
 	var input cashflow.CashflowDeleteInput
@@ -135,6 +186,14 @@ func (h *cashflowHandler) DeleteCashflow(c *gin.Context) {
 		return
 	}
 
-	response := helper.APIResponse("Success to delete cashflow", http.StatusOK, "success", nil)
+	if input.ImageUrl != "" {
+		err := os.Remove(input.ImageUrl)
+		if err != nil {
+			// Handle the error if necessary
+			fmt.Printf("Failed to delete old image: %v\n", err)
+		}
+	}
+
+	response := helper.APIResponse("Cashflow deleted successfully", http.StatusOK, "success", nil)
 	c.JSON(http.StatusOK, response)
 }
